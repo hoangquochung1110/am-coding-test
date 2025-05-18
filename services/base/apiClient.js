@@ -1,54 +1,107 @@
-import axios from 'axios';
-
 class BaseApiClient {
     constructor(baseURL, defaultOptions = {}) {
-        this.client = axios.create({
-            baseURL,
-            ...defaultOptions,
-        });
+        this.baseURL = baseURL;
+        this.defaultOptions = defaultOptions;
+        
+        // Store any default params from options
+        this.defaultParams = defaultOptions.params || {};
+    }
 
-        // Add request interceptor
-        this.client.interceptors.request.use(
-            (config) => {
-                // You can modify the request config here (add headers, auth tokens, etc.)
-                return config;
-            },
-            (error) => Promise.reject(error)
-        );
-
-        // Add response interceptor
-        this.client.interceptors.response.use(
-            (response) => response.data,
-            (error) => {
-                if (error.response) {
-                    // The request was made and the server responded with a status code
-                    // that falls out of the range of 2xx
-                    throw new Error(`API Error: ${error.response.status} - ${error.response.data?.message || error.message}`);
-                } else if (error.request) {
-                    // The request was made but no response was received
-                    throw new Error('No response received from the server');
-                } else {
-                    // Something happened in setting up the request
-                    throw new Error(`Request failed: ${error.message}`);
-                }
+    // Helper to build URL with query parameters
+    _buildUrl(endpoint, params = {}) {       
+        // Remove leading slash from endpoint if present
+        const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+        
+        // Construct full URL ensuring proper path combination
+        const url = new URL(this.baseURL);
+        const basePath = url.pathname.replace(/\/$/, ''); // Remove trailing slash
+        url.pathname = basePath + '/' + cleanEndpoint;
+        
+        
+        // Add default params and merge with endpoint params
+        const allParams = { 
+            ...this.defaultParams, 
+            ...(typeof params === 'object' && params.params ? params.params : params) 
+        };
+        
+        // Append params to URL
+        Object.entries(allParams).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
             }
-        );
+        });
+        
+        return url.toString();
+    }
+
+    // Helper for making requests
+    async _makeRequest(endpoint, options = {}) {
+        try {
+            const response = await fetch(
+                this._buildUrl(endpoint, options.params), 
+                options
+            );
+            
+            // Check if response is ok
+            if (!response.ok) {
+                let errorMessage = `API Error: ${response.status}`;
+                try {
+                    // Try to get error message from response body
+                    const errorData = await response.json();
+                    errorMessage += ` - ${errorData.message || ''}`;
+                } catch (e) {
+                    // If parsing fails, use statusText
+                    errorMessage += ` - ${response.statusText}`;
+                }
+                throw new Error(errorMessage);
+            }
+            
+            // Parse JSON response
+            return await response.json();
+        } catch (error) {
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                throw new Error('No response received from the server');
+            }
+            throw error;
+        }
     }
 
     async get(endpoint, params = {}) {
-        return this.client.get(endpoint, { params });
+        return this._makeRequest(endpoint, { 
+            method: 'GET',
+            params
+        });
     }
 
     async post(endpoint, data = {}, config = {}) {
-        return this.client.post(endpoint, data, config);
+        return this._makeRequest(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json',
+                ...(config.headers || {})
+            },
+            ...config,
+        });
     }
 
     async put(endpoint, data = {}, config = {}) {
-        return this.client.put(endpoint, data, config);
+        return this._makeRequest(endpoint, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json',
+                ...(config.headers || {})
+            },
+            ...config,
+        });
     }
 
     async delete(endpoint, config = {}) {
-        return this.client.delete(endpoint, config);
+        return this._makeRequest(endpoint, {
+            method: 'DELETE',
+            ...config,
+        });
     }
 }
 
