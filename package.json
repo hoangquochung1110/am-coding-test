@@ -6,10 +6,12 @@
   "type": "module",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "worker:build": "npx esbuild worker.js --bundle --format=esm --outfile=dist/worker.js",
+    "worker:dev": "wrangler dev --test-scheduled",
+    "worker:deploy": "wrangler deploy"
   },
   "dependencies": {
-    "axios": "^1.9.0",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
@@ -17,6 +19,8 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "esbuild": "^0.25.4",
+    "nodemon": "^3.1.10",
+    "wrangler": "^4.15.2"
   }
 }

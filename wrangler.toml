@@ -1,0 +1,18 @@
+name = "am-coding-test-weather-fetcher"
+main = "worker.js"
+compatibility_date = "2023-10-30"
+
+# Use the latest Workers runtime
+compatibility_flags = ["nodejs_compat"]
+
+[build]
+command = "npx esbuild worker.js --bundle --format=esm --outfile=dist/worker.js"
+
+# Run a few times per day (every 8 hours)
+[triggers]
+crons = ["0 0,8,16 * * *"]
+
+# Secrets should be added using: wrangler secret put OPENWEATHERMAP_API_KEY
+
+[observability.logs]
+enabled = true
