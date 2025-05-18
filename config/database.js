@@ -1,4 +1,6 @@
-const config = {
+import { Sequelize } from 'sequelize';
+
+const database = {
   development: {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT, 10) || 5432,
@@ -32,4 +34,20 @@ const config = {
   }
 };
 
-module.exports = config;
+
+const dbConfig = database;
+
+const sequelize = new Sequelize(
+  dbConfig.database,
+  dbConfig.username,
+  dbConfig.password,
+  {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    dialect: dbConfig.dialect,
+    dialectOptions: dbConfig.dialectOptions,
+    logging: console.log
+  }
+);
+
+export default sequelize;
