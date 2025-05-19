@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "worker:build": "npx esbuild worker.js --bundle --format=esm --outfile=dist/worker.js",
+    "worker:build": "npx esbuild worker.js --bundle --format=esm --platform=node --outfile=dist/worker.js",
     "worker:dev": "wrangler dev --test-scheduled",
     "worker:deploy": "wrangler deploy"
   },
