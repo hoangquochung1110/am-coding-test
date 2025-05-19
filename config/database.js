@@ -1,6 +1,13 @@
 import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv';
 
-const database = {
+// Load environment variables
+dotenv.config();
+
+const env = process.env.NODE_ENV || 'development';
+
+// Database configurations for different environments
+const databaseConfig = {
   development: {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT, 10) || 5432,
@@ -34,9 +41,10 @@ const database = {
   }
 };
 
+// Get the correct environment configuration
+const dbConfig = databaseConfig[env];
 
-const dbConfig = database;
-
+// Create Sequelize instance with the selected configuration
 const sequelize = new Sequelize(
   dbConfig.database,
   dbConfig.username,
@@ -50,4 +58,9 @@ const sequelize = new Sequelize(
   }
 );
 
-export default sequelize;
+// Export the Sequelize instance for database operations
+// and the config for reference
+export default {
+  sequelize,
+  config: databaseConfig
+};

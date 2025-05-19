@@ -1,13 +1,14 @@
-// index.js
 import express from 'express';
 import { EventEmitter } from 'events';
-import { config } from './config/index.js';
+import config from './config/index.js';
+import database from './config/database.js';
 
 class Application extends EventEmitter {
   constructor() {
     super();
     this.app = express();
     this.config = config;
+    this.db = database.sequelize;
     
     // Setup basic middleware
     this.app.use(express.json());
@@ -42,6 +43,10 @@ class Application extends EventEmitter {
       // Emit 'before:start' event before initialization
       this.emit('before:start');
       
+      // Test database connection before starting the server
+      await this.db.authenticate();
+      console.log('Database connection has been established successfully.');
+      
       // Start the server
       const server = this.app.listen(this.config.port, () => {
         console.log(`Server is running on port ${this.config.port} in ${this.config.env} mode`);
@@ -58,8 +63,21 @@ class Application extends EventEmitter {
       // Setup graceful shutdown
       process.on('SIGTERM', () => {
         this.emit('shutdown');
-        server.close(() => {
+        server.close(async () => {
           console.log('HTTP server closed');
+          await this.db.close();
+          console.log('Database connection closed');
+          process.exit(0);
+        });
+      });
+      
+      // Handle SIGINT (Ctrl+C)
+      process.on('SIGINT', () => {
+        this.emit('shutdown');
+        server.close(async () => {
+          console.log('HTTP server closed');
+          await this.db.close();
+          console.log('Database connection closed');
           process.exit(0);
         });
       });
@@ -67,7 +85,8 @@ class Application extends EventEmitter {
       return server;
     } catch (error) {
       this.emit('error', error);
-      throw error;
+      console.error('Failed to start application:', error);
+      process.exit(1);
     }
   }
 }
@@ -78,22 +97,19 @@ const app = new Application();
 // Register event handlers
 app.on('before:start', () => {
   console.log('Application is initializing...');
-  // Here you could initialize database connections
+  console.log('Establishing database connection...');
 });
 
 app.on('after:start', (server) => {
   console.log('Application has started successfully');
-  // Here you could log that everything is ready
 });
 
 app.on('error', (error) => {
   console.error('Application error:', error);
-  // Handle initialization errors
 });
 
 app.on('shutdown', () => {
   console.log('Application is shutting down...');
-  // Close database connections, etc.
 });
 
 // Start the application
