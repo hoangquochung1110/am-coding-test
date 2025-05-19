@@ -6,6 +6,17 @@ dotenv.config();
 
 const env = process.env.NODE_ENV || 'development';
 
+// Default SSL configuration (enabled for all environments except test)
+const defaultSSLConfig = env !== 'test' ? {
+  ssl: true,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
+  }
+} : {};
+
 // Database configurations for different environments
 const databaseConfig = {
   development: {
@@ -15,6 +26,7 @@ const databaseConfig = {
     username: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
     dialect: 'postgres',
+    ...defaultSSLConfig,
   },
   test: {
     host: process.env.TEST_DB_HOST || 'localhost',
@@ -31,13 +43,7 @@ const databaseConfig = {
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     dialect: 'postgres',
-    ssl: true,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
-    }
+    ...defaultSSLConfig
   }
 };
 
