@@ -1,4 +1,4 @@
-import { WeatherService } from '../../base/index.js';
+import { WeatherService } from '../base/index.js';
 import AccuWeatherTransformer from './AccuWeatherTransformer.js';
 import AccuWeatherApiClient from './AccuWeatherApiClient.js';
 

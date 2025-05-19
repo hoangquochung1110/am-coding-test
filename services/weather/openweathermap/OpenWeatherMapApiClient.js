@@ -1,6 +1,6 @@
-import { BaseApiClient } from '../../../../services/base/index.js';
+import { WeatherApiClient } from '../base/index.js';
 
-class OpenWeatherMapApiClient extends BaseApiClient {
+class OpenWeatherMapApiClient extends WeatherApiClient {
     constructor(apiKey) {
         super('https://api.openweathermap.org/data/2.5', {
             params: {

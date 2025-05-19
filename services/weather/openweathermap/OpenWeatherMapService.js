@@ -1,4 +1,4 @@
-import { WeatherService } from '../../base/index.js';
+import { WeatherService } from '../base/index.js';
 import OpenWeatherMapTransformer from './OpenWeatherMapTransformer.js';
 import OpenWeatherMapApiClient from './OpenWeatherMapApiClient.js';
 

@@ -1,5 +1,5 @@
-import OpenWeatherMapService from './providers/openweathermap/index.js';
-import AccuWeatherService from './providers/accuweather/index.js';
+import OpenWeatherMapService from './openweathermap/index.js';
+import AccuWeatherService from './accuweather/index.js';
 
 export const WeatherProvider = {
     OPENWEATHERMAP: 'openweathermap',

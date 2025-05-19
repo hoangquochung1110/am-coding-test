@@ -1,4 +1,5 @@
-import { BaseTransformer } from '../../base/index.js';
+import { BaseTransformer, BaseApiClient } from '../../base/index.js';
+
 
 /**
  * Abstract Weather Service that defines the interface for all weather providers

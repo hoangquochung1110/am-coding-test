@@ -1,4 +1,4 @@
-import BaseWeatherTransformer from '../../base/WeatherTransformer.js';
+import { BaseWeatherTransformer }from '../base/index.js';
 
 class AccuWeatherTransformer extends BaseWeatherTransformer {
     transform(data) {

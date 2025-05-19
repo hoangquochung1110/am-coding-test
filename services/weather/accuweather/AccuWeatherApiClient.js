@@ -1,6 +1,7 @@
-import { BaseApiClient } from '../../../../services/base/index.js';
+import { WeatherApiClient } from '../base/WeatherApiClient.js';
 
-class AccuWeatherApiClient extends BaseApiClient {
+
+class AccuWeatherApiClient extends WeatherApiClient {
     constructor(apiKey) {
         super('https://dataservice.accuweather.com', {
             params: {

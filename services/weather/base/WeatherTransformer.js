@@ -1,4 +1,4 @@
-import BaseTransformer from '../../base/transformer.js';
+import { BaseTransformer } from '../../base/index.js';
 
 /**
  * Base Transformer for weather data that includes location normalization

@@ -105,4 +105,4 @@ class BaseApiClient {
     }
 }
 
-export default BaseApiClient;
+export { BaseApiClient };

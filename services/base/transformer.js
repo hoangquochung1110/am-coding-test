@@ -35,4 +35,4 @@ class BaseTransformer {
     }
 }
 
-export default BaseTransformer;
+export { BaseTransformer };
