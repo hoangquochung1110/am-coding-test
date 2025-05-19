@@ -1,4 +1,4 @@
 // models/index.js
-import Weather from "./weather";
+import Weather from "./weather.js";
 
 export { Weather };

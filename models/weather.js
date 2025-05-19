@@ -1,6 +1,7 @@
 // models/weather.js
 import { DataTypes } from 'sequelize';
-import sequelize from './index.js';
+import db from '../config/database.js';
+const { sequelize } = db;
 
 const Weather = sequelize.define('Weather', {
   // Location data
