@@ -10,29 +10,29 @@ class BaseTransformer {
      * @throws {Error} If data validation fails
      */
     normalize(rawData) {
-      if (!this.validate(rawData)) {
-        throw new Error('Invalid data structure received from external source');
-      }
-      return this.transform(rawData);
+        if (!this.validate(rawData)) {
+            throw new Error('Invalid data structure received from external source');
+        }
+        return this.transform(rawData);
     }
-  
+    
     /**
      * Internal transformation logic
      * @param {*} data - Validated external data
      * @returns {Object} Transformed data
      */
     transform(data) {
-      throw new Error('transform() method must be implemented');
+        throw new Error('transform() method must be implemented');
     }
-  
+    
     /**
      * Validate incoming data structure
      * @param {*} data - Raw data to validate
      * @returns {boolean} Validation result
      */
     validate(data) {
-      throw new Error('validate() method must be implemented');
+        throw new Error('validate() method must be implemented');
     }
-  }
-  
-  export default BaseTransformer;
+}
+
+export default BaseTransformer;
