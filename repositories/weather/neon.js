@@ -43,7 +43,7 @@ class NeonWeatherRepository extends WeatherRepositoryInterface {
    */
   async checkConnection() {
     try {
-      await this.sql`SELECT 1 FROM weather LIMIT 1`;
+      await this.sql`SELECT * FROM weather LIMIT 1`;
       return true;
     } catch (error) {
       throw createRepositoryError(

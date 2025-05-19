@@ -1,6 +1,6 @@
 // worker.js
 import createWeatherService, { WeatherProvider } from './services/weather/index.js';
-import { createWeatherRepository, RepositoryType } from './repositories/index.js';
+import { createWeatherRepository, RepositoryType } from './repositories/weather/index.js';
 
 // Define the cities you want to fetch weather for
 const CITIES = ['Singapore', 'London', 'New York'];
@@ -52,6 +52,7 @@ async function fetchWeatherData(env) {
           
           // Save to database
           const record = await weatherRepository.save(weatherData);
+          console.log(`Saved weather data for ${city}: `, record)
           
           // Add database operation result to the response
           return { 
