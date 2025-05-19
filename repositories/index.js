@@ -1,4 +1,4 @@
-import WeatherRepository from "./weather";
+import WeatherRepository from "./weather.js";
 
 export {
     WeatherRepository,
