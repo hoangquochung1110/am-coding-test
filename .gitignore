@@ -51,3 +51,4 @@ pids
 # Yarn Integrity file
 .yarn-integrity
 .dev.vars
+.wrangler/
