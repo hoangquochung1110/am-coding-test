@@ -1,6 +1,6 @@
-import { BaseTransformer } from '../../../../services/base/index.js';
+import BaseWeatherTransformer from '../../base/WeatherTransformer.js';
 
-class OpenWeatherMapTransformer extends BaseTransformer {
+class OpenWeatherMapTransformer extends BaseWeatherTransformer {
     transform(data) {
         if (data.list) {
             return this._transformForecast(data);
@@ -24,17 +24,18 @@ class OpenWeatherMapTransformer extends BaseTransformer {
     }
 
     _transformCurrent(data) {
+        // Normalize location data
+        const normalizedLocation = this._normalizeLocation({
+            city: data.name,
+            country: data.sys?.country
+        });
+
         return {
             // Provider information
             provider: 'openweathermap',
-            
-            // Location data
-            city: data.name,
-            country: data.sys.country,
-            latitude: data.coord.lat,
-            longitude: data.coord.lon,
-            
-            // Temperature data
+            ...normalizedLocation,
+            latitude: data.coord?.lat,
+            longitude: data.coord?.lon,
             temperature: data.main.temp,
             feelsLike: data.main.feels_like,
             tempMin: data.main.temp_min,
@@ -59,10 +60,15 @@ class OpenWeatherMapTransformer extends BaseTransformer {
     }
 
     _transformForecast(data) {
+        // Normalize location data
+        const normalizedLocation = this._normalizeLocation({
+            city: data.city.name,
+            country: data.city.country
+        });
+
         return {
             provider: 'openweathermap',
-            city: data.city.name,
-            country: data.city.country,
+            ...normalizedLocation,
             latitude: data.city.coord.lat,
             longitude: data.city.coord.lon,
             forecast: data.list.map(item => ({
