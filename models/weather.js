@@ -4,9 +4,23 @@ import db from '../config/database.js';
 const { sequelize } = db;
 
 const Weather = sequelize.define('Weather', {
+  // Provider information
+  provider: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'Provider is required' },
+      notEmpty: { msg: 'Provider cannot be empty' },
+      isIn: {
+        args: [['openweathermap', 'accuweather']],
+        msg: 'Invalid provider specified'
+      }
+    }
+  },
+  
   // Location data
   city: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: false
   },
   country: {
@@ -62,7 +76,7 @@ const Weather = sequelize.define('Weather', {
   
   // Weather conditions
   conditionMain: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: false
   },
   conditionDescription: {
@@ -77,7 +91,19 @@ const Weather = sequelize.define('Weather', {
   // Timestamp of the weather reading
   timestamp: {
     type: DataTypes.DATE,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'Timestamp is required' },
+      isDate: { msg: 'Invalid date format for timestamp' },
+      isAfter: {
+        args: '1970-01-01',
+        msg: 'Timestamp must be after 1970'
+      },
+      isBefore: {
+        args: new Date(Date.now() + 86400000).toISOString(), // 1 day in future max
+        msg: 'Timestamp cannot be in the far future'
+      }
+    }
   }
 }, {
   // Table configuration options

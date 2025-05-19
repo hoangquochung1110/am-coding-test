@@ -25,6 +25,9 @@ class OpenWeatherMapTransformer extends BaseTransformer {
 
     _transformCurrent(data) {
         return {
+            // Provider information
+            provider: 'openweathermap',
+            
             // Location data
             city: data.name,
             country: data.sys.country,
@@ -57,6 +60,7 @@ class OpenWeatherMapTransformer extends BaseTransformer {
 
     _transformForecast(data) {
         return {
+            provider: 'openweathermap',
             city: data.city.name,
             country: data.city.country,
             latitude: data.city.coord.lat,

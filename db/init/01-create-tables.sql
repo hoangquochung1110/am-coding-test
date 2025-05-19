@@ -1,15 +1,16 @@
-CREATE TABLE IF NOT EXISTS weather (
-    id SERIAL PRIMARY KEY,
-    city VARCHAR(255) NOT NULL,
-    country VARCHAR(255) NOT NULL,
-    latitude FLOAT NOT NULL,
-    longitude FLOAT NOT NULL,
-    temperature FLOAT NOT NULL,
+CREATE TABLE IF NOT EXISTS "weather" (
+    "id" SERIAL PRIMARY KEY,
+    "provider" VARCHAR(50) NOT NULL,
+    "city" VARCHAR(255) NOT NULL,
+    "country" VARCHAR(255) NOT NULL,
+    "latitude" FLOAT NOT NULL,
+    "longitude" FLOAT NOT NULL,
+    "temperature" FLOAT NOT NULL,
     "feelsLike" FLOAT NOT NULL,
     "tempMin" FLOAT NOT NULL,
     "tempMax" FLOAT NOT NULL,
-    humidity INTEGER NOT NULL,
-    pressure INTEGER NOT NULL,
+    "humidity" INTEGER NOT NULL,
+    "pressure" INTEGER NOT NULL,
     "windSpeed" FLOAT NOT NULL,
     "windDirection" INTEGER NOT NULL,
     "conditionMain" VARCHAR(255) NOT NULL,
@@ -19,6 +20,3 @@ CREATE TABLE IF NOT EXISTS weather (
     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
--- Create indexes
-CREATE INDEX IF NOT EXISTS idx_weather_city ON weather(city);
