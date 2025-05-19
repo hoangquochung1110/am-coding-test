@@ -1,4 +1,5 @@
 import WeatherServiceFactory, { WeatherProvider } from './WeatherServiceFactory.js';
+import WeatherService from './base/WeatherService.js';
 
 /**
  * Create a weather service instance for the specified provider
@@ -10,5 +11,5 @@ function createWeatherService(apiKey, provider = WeatherProvider.OPENWEATHERMAP)
     return WeatherServiceFactory.createWeatherService(provider, { apiKey });
 }
 
-export { WeatherProvider };
+export { WeatherProvider, WeatherService };
 export default createWeatherService;
