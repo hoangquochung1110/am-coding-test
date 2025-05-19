@@ -97,4 +97,72 @@ Bạn có thể sử dụng bất kỳ dịch vụ PostgreSQL từ xa nào (như
 
 ## Triển khai
 
-Chi tiết về triển khai dự án sẽ được bổ sung sau.
+### Triển khai Cloudflare Worker
+
+Dự án này sử dụng Cloudflare Workers để tự động thu thập dữ liệu thời tiết. Để triển khai Worker, làm theo các bước sau:
+
+1. Đảm bảo bạn đã cài đặt Wrangler CLI:
+
+   ```bash
+   npm install -g wrangler
+   ```
+
+2. Đăng nhập vào tài khoản Cloudflare của bạn:
+
+   ```bash
+   wrangler login
+   ```
+
+3. Cấu hình các bí mật (secrets) cần thiết:
+
+   ```bash
+   # Thêm API key cho OpenWeatherMap
+   wrangler secret put OPENWEATHERMAP_API_KEY
+
+   # Thêm thông tin đăng nhập cơ sở dữ liệu
+   wrangler secret put DB_USER
+   wrangler secret put DB_PASSWORD
+   wrangler secret put DB_HOST
+   wrangler secret put DB_NAME
+   ```
+
+4. Xây dựng và triển khai Worker:
+
+   ```bash
+   npm run worker:build
+   npm run worker:deploy
+   ```
+
+### Bí mật (Secrets) cần thiết cho Wrangler
+
+Worker cần các bí mật sau để hoạt động:
+
+- `OPENWEATHERMAP_API_KEY`: Khóa API cho dịch vụ OpenWeatherMap
+- `DB_USER`: Tên người dùng cơ sở dữ liệu
+- `DB_PASSWORD`: Mật khẩu cơ sở dữ liệu
+- `DB_HOST`: Tên miền/URL cơ sở dữ liệu
+- `DB_NAME`: Tên cơ sở dữ liệu
+
+### Phát triển cục bộ với Wrangler
+
+Để phát triển Worker cục bộ, tạo tệp `.dev.vars` trong thư mục gốc với nội dung:
+
+```
+OPENWEATHERMAP_API_KEY=your_api_key
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+DB_HOST=your_db_host
+DB_NAME=your_db_name
+```
+
+Sau đó, chạy:
+
+```bash
+npm run worker:dev
+```
+
+Kiểm tra Worker bằng cách sử dụng:
+
+```bash
+curl http://localhost:8787/trigger-fetch
+```

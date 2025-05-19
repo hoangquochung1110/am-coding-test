@@ -12,6 +12,10 @@ command = "npx esbuild worker.js --bundle --format=esm --outfile=dist/worker.js"
 [triggers]
 crons = ["0 0,8,16 * * *"]
 
+# Define the cities you want to fetch weather for
+[vars]
+CITIES = "Ho Chi Minh,London,New York"
+
 # Secrets should be added using: wrangler secret put OPENWEATHERMAP_API_KEY
 
 [observability.logs]

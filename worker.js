@@ -2,8 +2,6 @@
 import createWeatherService, { WeatherProvider } from './services/weather/index.js';
 import { createWeatherRepository, RepositoryType } from './repositories/weather/index.js';
 
-// Define the cities you want to fetch weather for
-const CITIES = ['Singapore', 'London', 'New York'];
 
 /**
  * Create a database connection string from environment variables
@@ -37,6 +35,9 @@ async function initRepository(env) {
 
 async function fetchWeatherData(env) {
   try {
+
+    const CITIES = env.CITIES ? env.CITIES.split(',') : ['Ho Chi Minh'];
+
     // Create the weather service using the API key from environment
     const weatherService = createWeatherService(env.OPENWEATHERMAP_API_KEY);
     
