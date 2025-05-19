@@ -108,8 +108,6 @@ class BaseWeatherTransformer extends BaseTransformer {
             'uk': 'GB',
             'u.k.': 'GB',
             'england': 'GB',
-            'viet nam': 'VN',
-            'vietnam': 'VN'
         };
         
         const lowerCountry = country.trim().toLowerCase();
