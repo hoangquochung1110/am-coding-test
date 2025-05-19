@@ -1,5 +1,1 @@
-import WeatherRepository from "./weather.js";
-
-export {
-    WeatherRepository,
-}
+export { default as WeatherRepository } from "./weather.js";

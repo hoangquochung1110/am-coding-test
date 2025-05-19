@@ -7,4 +7,4 @@ class WeatherApiClient extends BaseApiClient {
     }
 }
 
-export { WeatherApiClient };
+export default WeatherApiClient;

@@ -1,5 +1,5 @@
 // worker.js
-import createWeatherService, { WeatherProvider } from './services/weather/index.js';
+import { createWeatherService } from './services/weather/index.js';
 import { createWeatherRepository, RepositoryType } from './repositories/weather/index.js';
 
 

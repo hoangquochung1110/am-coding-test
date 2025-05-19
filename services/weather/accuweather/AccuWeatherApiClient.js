@@ -1,4 +1,4 @@
-import { WeatherApiClient } from '../base/WeatherApiClient.js';
+import { WeatherApiClient } from '../base/index.js';
 
 
 class AccuWeatherApiClient extends WeatherApiClient {

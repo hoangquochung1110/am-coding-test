@@ -6,7 +6,7 @@ export const WeatherProvider = {
     ACCUWEATHER: 'accuweather'
 };
 
-class WeatherServiceFactory {
+export class WeatherServiceFactory {
     static createWeatherService(provider, config) {
         switch (provider.toLowerCase()) {
             case WeatherProvider.OPENWEATHERMAP:
@@ -18,5 +18,3 @@ class WeatherServiceFactory {
         }
     }
 }
-
-export default WeatherServiceFactory;

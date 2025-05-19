@@ -3,7 +3,7 @@ import database from './database.js';
 
 const env = process.env.NODE_ENV || 'development';
 
-export const config = {
+const config = {
   env,
   port: process.env.PORT || 3000,
   database: database.config[env],
