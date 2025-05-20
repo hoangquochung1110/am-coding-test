@@ -1,6 +1,8 @@
 // worker.js
 import { createWeatherService } from './services/weather/index.js';
 import { createWeatherRepository, RepositoryType } from './repositories/weather/index.js';
+import { createNewsRepository } from './repositories/news/index.js';
+import { createNewsService } from './services/news/index.js';
 
 
 /**
@@ -17,7 +19,7 @@ function getDatabaseUrl(env) {
  * @param {Object} env - Environment variables
  * @returns {Promise<Object>} Repository instance
  */
-async function initRepository(env) {
+async function initWeatherRepository(env) {
   // Create the repository instance with Neon configuration
   const weatherRepository = await createWeatherRepository({
     type: RepositoryType.NEON,
@@ -33,16 +35,34 @@ async function initRepository(env) {
   return weatherRepository;
 }
 
-async function fetchWeatherData(env) {
+async function initNewsRepository(env) {
+  // Create the repository instance with Neon configuration
+  const newsRepository = await createNewsRepository({
+    type: RepositoryType.NEON,
+    config: {
+      connectionString: getDatabaseUrl(env)
+    }
+  });
+  
+  // Verify database connection and that the table exists
+  await newsRepository.checkConnection();
+  console.log('Successfully connected to news database');
+  
+  return newsRepository;
+}
+
+async function fetchData(env) {
   try {
 
     const CITIES = env.CITIES ? env.CITIES.split(',') : ['Ho Chi Minh'];
 
     // Create the weather service using the API key from environment
     const weatherService = createWeatherService(env.OPENWEATHERMAP_API_KEY);
-    
-    // Initialize repository
-    const weatherRepository = await initRepository(env);
+    const newsService = new createNewsService(env.NEWSAPI_API_KEY);
+
+    // Initialize repositories
+    const weatherRepository = await initWeatherRepository(env);
+    const newsRepository = await initNewsRepository(env);
     
     // Fetch weather for each city
     const results = await Promise.all(
@@ -71,7 +91,32 @@ async function fetchWeatherData(env) {
     
     // Log results (for the POC)
     console.log('Weather data fetch results:', JSON.stringify(results, null, 2));
-    
+
+    const topHeadlines = await newsService.getTopHeadlines({ 
+      country: 'us',
+      category: 'technology'
+    });
+  
+    // Save headlines to database
+    for (const article of topHeadlines.articles) {
+        try {
+            const savedArticle = await newsRepository.create({
+                title: article.title,
+                description: article.description || '',
+                content: article.content || '',
+                url: article.url,
+                imageUrl: article.imageUrl || '', 
+                publishedAt: article.publishedAt,
+                sourceName: article.sourceName,
+                author: article.author || '',
+                provider: 'newsapi'
+            });
+            console.log(`Successfully saved article: ${savedArticle.title}`);
+        } catch (error) {
+            console.error(`Error saving article: ${error.message}`);
+        }
+    }
+
     return results;
   } catch (error) {
     console.error("Error fetching weather data:", error);
@@ -87,7 +132,7 @@ export default {
       
       // Add a simple endpoint to manually trigger the weather fetch
       if (url.pathname === "/trigger-fetch") {
-        const results = await fetchWeatherData(env);
+        const results = await fetchData(env);
         return new Response(JSON.stringify(results, null, 2), {
           headers: { "Content-Type": "application/json" }
         });
@@ -111,7 +156,7 @@ export default {
   // Scheduled handler for cron jobs
   async scheduled(event, env, ctx) {
     try {
-      const results = await fetchWeatherData(env);
+      const results = await fetchData(env);
       return new Response("Weather data retrieved and saved successfully", { status: 200 });
     } catch (error) {
       console.error("Scheduled job error:", error);
