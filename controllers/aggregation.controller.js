@@ -4,15 +4,12 @@ import { AggregationService } from '../services/aggregate/aggregation.service.js
 const aggregationService = new AggregationService();
 
 export class AggregationController {
-  /**
-   * Get aggregated data from all sources
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
-   */
   static async getAggregatedData(req, res) {
     try {
-      // Use req.query instead of req.parsedQuery
-      console.log("Query: ", req.query);
+      // Log the query parameters for debugging
+      console.log("Query parameters:", req.query);
+      
+      // Pass the query parameters to the service
       const data = await aggregationService.getAggregatedData(req.query);
       
       // Check if we got valid data
@@ -20,11 +17,18 @@ export class AggregationController {
         throw new Error('Invalid data received from service');
       }
 
+      // Return a structured response that includes pagination metadata
       return res.json({
         success: true,
         data: {
-          news: Array.isArray(data.news) ? data.news : [],
-          weather: data.weather && typeof data.weather === 'object' ? data.weather : {},
+          news: {
+            items: data.news.items || [],
+            pagination: data.news.pagination || {}
+          },
+          weather: {
+            items: data.weather.items || [],
+            pagination: data.weather.pagination || {}
+          },
           timestamp: data.timestamp || new Date().toISOString()
         }
       });
@@ -41,7 +45,6 @@ export class AggregationController {
         success: false,
         message: 'Failed to process your request',
         error: errorMessage,
-        // Include stack trace in development for debugging
         ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
       });
     }

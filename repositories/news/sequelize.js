@@ -111,12 +111,56 @@ export default function createSequelizeRepository(config) {
       const count = await model.destroy({ where: { id } });
       return count > 0;
     }
-    
-    /**
-     * Validate news article data
-     * @param {Object} data - Data to validate
-     * @throws {Error} If validation fails
-     */
+
+  /**
+   * Find all news articles matching criteria
+   * @param {Object} criteria - Search criteria
+   * @param {Object} options - Query options (limit, offset, order, etc.)
+   * @returns {Promise<Array>} List of articles
+   */
+  async findAll(criteria = {}, options = {}) {
+    try {
+      // Convert criteria to where clause
+      const whereClause = { ...criteria };
+      
+      // Create query options with where clause
+      const queryOptions = {
+        where: whereClause,
+        ...options
+      };
+      
+      // If order is not specified, default to newest first
+      if (!queryOptions.order) {
+        queryOptions.order = [['publishedAt', 'DESC']];
+      }
+      
+      // Execute query
+      return await model.findAll(queryOptions);
+    } catch (error) {
+      const errorMessage = `Failed to find news articles: ${error.message}`;
+      console.error(errorMessage);
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * Count news articles matching criteria
+   * @param {Object} criteria - Search criteria
+   * @returns {Promise<number>} Count of matching articles
+   */
+  async count(criteria = {}) {
+    try {
+      return await model.count({ where: criteria });
+    } catch (error) {
+      throw new Error(`Failed to count news articles: ${error.message}`);
+    }
+  }
+
+  /**
+   * Validate news article data
+   * @param {Object} data - Data to validate
+   * @throws {Error} If validation fails
+   */
     validate(data) {
       if (!data || typeof data !== 'object') {
         throw new Error('News data must be an object');

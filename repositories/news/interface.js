@@ -67,4 +67,23 @@ export class NewsRepository {
   validate(data) {
     throw new Error('Method must be implemented');
   }
+
+  /**
+   * Find all news articles matching criteria
+   * @param {Object} criteria - Search criteria
+   * @param {Object} options - Query options (limit, offset, order, etc.)
+   * @returns {Promise<Array>} List of articles
+   */
+  findAll(criteria = {}, options = {}) {
+    throw new Error('Method must be implemented');
+  }
+
+  /**
+   * Count news articles matching criteria
+   * @param {Object} criteria - Search criteria
+   * @returns {Promise<number>} Count of matching articles
+   */
+  count(criteria = {}) {
+    throw new Error('Method must be implemented');
+  }
 }

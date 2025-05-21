@@ -245,6 +245,92 @@ export default function createNeonRepository(config = {}) {
     }
 
     /**
+ * Find all news articles matching criteria
+ * @param {Object} criteria - Search criteria
+ * @param {Object} options - Query options (limit, offset, order, etc.)
+ * @returns {Promise<Array>} List of articles
+ */
+async findAll(criteria = {}, options = {}) {
+  try {
+    // Build query parts
+    const whereParts = [];
+    const values = [];
+    let index = 1;
+    
+    // Process criteria
+    Object.entries(criteria).forEach(([key, value]) => {
+      // Handle special case for "provider" which we already have a dedicated method for
+      if (key === 'provider') {
+        whereParts.push(`provider = $${index}`);
+        values.push(value);
+        index++;
+      } else {
+        whereParts.push(`"${key}" = $${index}`);
+        values.push(value);
+        index++;
+      }
+    });
+    
+    // Construct WHERE clause
+    const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : '';
+    
+    // Handle ordering
+    let orderClause = 'ORDER BY "publishedAt" DESC';
+    if (options.order && options.order.length > 0) {
+      const orderParts = options.order.map(([column, direction]) => 
+        `"${column}" ${direction}`
+      );
+      orderClause = `ORDER BY ${orderParts.join(', ')}`;
+    }
+    
+    // Handle pagination
+    const limitClause = options.limit ? `LIMIT ${options.limit}` : '';
+    const offsetClause = options.offset ? `OFFSET ${options.offset}` : '';
+    
+    // Execute the query
+    const query = `
+      SELECT * FROM news
+      ${whereClause}
+      ${orderClause}
+      ${limitClause}
+      ${offsetClause}
+    `;
+    
+    const result = await sql.unsafe(query, values);
+    return result;
+  } catch (error) {
+    throw createRepositoryError(error, 'findAll');
+  }
+}
+
+  /**
+   * Count news articles matching criteria
+   * @param {Object} criteria - Search criteria
+   * @returns {Promise<number>} Count of matching articles
+   */
+  async count(criteria = {}) {
+    try {
+      const whereParts = [];
+      const values = [];
+      let index = 1;
+      
+      Object.entries(criteria).forEach(([key, value]) => {
+        whereParts.push(`"${key}" = $${index}`);
+        values.push(value);
+        index++;
+      });
+      
+      const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : '';
+      
+      const query = `SELECT COUNT(*) as count FROM news ${whereClause}`;
+      const result = await sql.unsafe(query, values);
+      
+      return parseInt(result[0].count, 10);
+    } catch (error) {
+      throw createRepositoryError(error, 'count');
+    }
+  }
+    /**
      * Validate news article data
      * @param {Object} data - Data to validate
      * @throws {Error} If validation fails

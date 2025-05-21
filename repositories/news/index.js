@@ -13,13 +13,14 @@ export const RepositoryType = Object.freeze({
  * @param {NewsRepository} implementation - The implementation to validate
  * @throws {Error} If the implementation is invalid
  */
+// In repositories/news/index.js, update the validateRepositoryImplementation function
 function validateRepositoryImplementation(implementation) {
   if (!(implementation instanceof NewsRepository)) {
     throw new Error('Repository must extend NewsRepository');
   }
   
   const requiredMethods = [
-    'create', 'findById', 'findByProvider', 'search', 'update', 'delete', 'validate'
+    'create', 'findById', 'findByProvider', 'search', 'update', 'delete', 'validate', 'findAll'
   ];
   
   for (const method of requiredMethods) {
