@@ -120,6 +120,10 @@ class WeatherRepositoryInterface {
     async getStatsByCity(city, timeRange = '24h') {
       throw new Error('Method getStatsByCity() must be implemented');
     }
+
+    async count(criteria = {}) {
+      throw new Error('Method count() must be implemented');
+    }
 }
 
 export default WeatherRepositoryInterface;

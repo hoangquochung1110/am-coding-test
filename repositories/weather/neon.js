@@ -363,6 +363,31 @@ class NeonWeatherRepository extends WeatherRepositoryInterface {
       throw createRepositoryError(error, 'getStatsByCity');
     }
   }
+
+  async count(criteria = {}) {
+    try {
+      // Build where clause based on criteria
+      let whereClause = '';
+      const values = [];
+      
+      if (Object.keys(criteria).length > 0) {
+        const whereParts = [];
+        Object.entries(criteria).forEach(([key, value], index) => {
+          whereParts.push(`"${key}" = $${index + 1}`);
+          values.push(value);
+        });
+        whereClause = `WHERE ${whereParts.join(' AND ')}`;
+      }
+      
+      const result = await this.sql`
+        SELECT COUNT(*) as count FROM weather ${this.sql.raw(whereClause)}
+      `;
+      
+      return parseInt(result[0].count, 10);
+    } catch (error) {
+      throw createRepositoryError(error, 'count');
+    }
+  }
 }
 
 export default NeonWeatherRepository;

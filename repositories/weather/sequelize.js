@@ -260,6 +260,14 @@ class SequelizeWeatherRepository extends WeatherRepositoryInterface {
       throw createRepositoryError(error, 'getStatsByCity');
     }
   }
+
+  async count(criteria = {}) {
+    try {
+      return await this.Weather.count({ where: criteria });
+    } catch (error) {
+      throw createRepositoryError(error, 'count');
+    }
+  }
 }
 
 export default SequelizeWeatherRepository;
