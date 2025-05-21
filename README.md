@@ -1,5 +1,9 @@
 # am-coding-test
 
+⚠️ **Lưu ý:**
+
+Do triển khai application trên Render sử dụng free plan, server đôi khi không sẵn sàng, nên sẽ phản hồi chậm ở lần truy cập đầu tiên
+
 ## Sơ đồ hệ thống
 
 ```
@@ -195,7 +199,7 @@ Dự án này sử dụng Cloudflare Workers để tự động thu thập dữ 
    npm run worker:deploy
    ```
 
-## Triển khai lên Render
+## Triển khai Application lên Render
 
 Render cung cấp một nền tảng đơn giản để triển khai ứng dụng Node.js với PostgreSQL. Dưới đây là cách triển khai ứng dụng này lên Render:
 
@@ -215,7 +219,7 @@ Render cung cấp một nền tảng đơn giản để triển khai ứng dụn
    - **Miễn phí** cho Web Service với:
      - 512 MB RAM
      - CPU chia sẻ
-     - Băng thông 100GB/tháng
+     - Đổi lại, **dịch vụ đôi lúc không sẵn sàng, thiếu ổn định**
 
 ### Các bước triển khai:
 
