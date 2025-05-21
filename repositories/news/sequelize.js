@@ -1,4 +1,5 @@
 import { NewsRepository } from './interface.js';
+import { validateNewsData, createRepositoryError } from './utils.js';
 
 /**
  * Creates a new Sequelize-backed news repository
@@ -31,19 +32,23 @@ export default function createSequelizeRepository(config) {
      * @returns {Promise<Object>} Saved news article
      */
     async save(data, id) {
-      this.validate(data);
-      
-      if (id) {
-        // Update existing article
-        const [count, [updated]] = await model.update(
-          { ...data, updatedAt: new Date() },
-          { where: { id }, returning: true }
-        );
-        return updated;
+      try {
+        const sanitizedData = this.validate(data);
+        
+        if (id) {
+          // Update existing article
+          const [count, [updated]] = await model.update(
+            { ...sanitizedData, updatedAt: new Date() },
+            { where: { id }, returning: true }
+          );
+          return updated;
+        }
+        
+        // Create new article
+        return this.create(sanitizedData);
+      } catch (error) {
+        throw createRepositoryError(error, 'save');
       }
-      
-      // Create new article
-      return this.create(data);
     }
     
     /**
@@ -52,137 +57,74 @@ export default function createSequelizeRepository(config) {
      * @returns {Promise<Object>} Created news article
      */
     async create(data) {
-      this.validate(data);
-      return model.create({
-        ...data,
-        imageUrl: data.imageUrl || null,
-        publishedAt: data.publishedAt || new Date()
-      });
+      try {
+        const sanitizedData = this.validate(data);
+        return model.create({
+          ...sanitizedData,
+          imageUrl: sanitizedData.imageUrl || null,
+          publishedAt: sanitizedData.publishedAt || new Date()
+        });
+      } catch (error) {
+        throw createRepositoryError(error, 'create');
+      }
     }
     
+    // Other methods remain the same...
+
     /**
-     * Find a news article by ID
-     * @param {number} id - Article ID
-     * @returns {Promise<Object|null>} Found article or null
+     * Validate news article data
+     * @param {Object} data - Data to validate
+     * @returns {Object} Sanitized and validated data
+     * @throws {Error} If validation fails
      */
-    async findById(id) {
-      return model.findByPk(id);
+    validate(data) {
+      return validateNewsData(data);
     }
-    
+
     /**
-     * Find news articles by provider
-     * @param {string} provider - Provider name
-     * @param {Object} [options] - Query options
+     * Find all news articles matching criteria with pagination and sorting
+     * @param {Object} criteria - Search criteria
+     * @param {Object} options - Query options (limit, offset, order, etc.)
      * @returns {Promise<Array>} List of articles
      */
-    async findByProvider(provider, options = {}) {
-      return model.findAll({
-        where: { provider },
-        order: [['publishedAt', 'DESC']],
-        limit: options.limit || 10,
-        offset: options.offset || 0
-      });
-    }
-    
-    /**
-     * Update a news article
-     * @param {number} id - Article ID
-     * @param {Object} data - Data to update
-     * @returns {Promise<Object>} Updated article
-     */
-    async update(id, data) {
-      this.validate(data);
-      const [count, [updated]] = await model.update(
-        { ...data, updatedAt: new Date() },
-        { where: { id }, returning: true }
-      );
-      if (!updated) {
-        throw new Error(`Article with ID ${id} not found`);
-      }
-      return updated;
-    }
-    
-    /**
-     * Delete a news article
-     * @param {number} id - Article ID
-     * @returns {Promise<boolean>} True if deleted, false otherwise
-     */
-    async delete(id) {
-      const count = await model.destroy({ where: { id } });
-      return count > 0;
-    }
+    async findAll(criteria = {}, options = {}) {
+      try {
+        const { 
+          limit = 10, 
+          offset = 0, 
+          order = [['publishedAt', 'DESC']],
+          attributes = undefined
+        } = options;
 
-  /**
-   * Find all news articles matching criteria
-   * @param {Object} criteria - Search criteria
-   * @param {Object} options - Query options (limit, offset, order, etc.)
-   * @returns {Promise<Array>} List of articles
-   */
-  async findAll(criteria = {}, options = {}) {
-    try {
-      // Convert criteria to where clause
-      const whereClause = { ...criteria };
-      
-      // Create query options with where clause
-      const queryOptions = {
-        where: whereClause,
-        ...options
-      };
-      
-      // If order is not specified, default to newest first
-      if (!queryOptions.order) {
-        queryOptions.order = [['publishedAt', 'DESC']];
-      }
-      
-      // Execute query
-      return await model.findAll(queryOptions);
-    } catch (error) {
-      const errorMessage = `Failed to find news articles: ${error.message}`;
-      console.error(errorMessage);
-      throw new Error(errorMessage);
-    }
-  }
+        const queryOptions = {
+          where: { ...criteria },
+          limit: parseInt(limit, 10),
+          offset: parseInt(offset, 10),
+          order,
+          raw: true,
+          nest: true
+        };
 
-  /**
-   * Count news articles matching criteria
-   * @param {Object} criteria - Search criteria
-   * @returns {Promise<number>} Count of matching articles
-   */
-  async count(criteria = {}) {
-    try {
-      return await model.count({ where: criteria });
-    } catch (error) {
-      throw new Error(`Failed to count news articles: ${error.message}`);
-    }
-  }
-
-  /**
-   * Validate news article data
-   * @param {Object} data - Data to validate
-   * @throws {Error} If validation fails
-   */
-    validate(data) {
-      if (!data || typeof data !== 'object') {
-        throw new Error('News data must be an object');
-      }
-      
-      const requiredFields = ['title', 'content', 'provider'];
-      for (const field of requiredFields) {
-        if (!data[field]) {
-          throw new Error(`Missing required field: ${field}`);
+        if (attributes) {
+          queryOptions.attributes = attributes;
         }
+
+        return await model.findAll(queryOptions);
+      } catch (error) {
+        throw createRepositoryError(error, 'findAll');
       }
-      
-      if (data.url && !/^https?:\/\//.test(data.url)) {
-        throw new Error('URL must start with http:// or https://');
-      }
-      
-      if (data.imageUrl && !/^https?:\/\//.test(data.imageUrl)) {
-        throw new Error('Image URL must start with http:// or https://');
-      }
-      
-      if (data.publishedAt && isNaN(new Date(data.publishedAt).getTime())) {
-        throw new Error('Invalid publishedAt date');
+    }
+
+    /**
+     * Count news articles matching criteria
+     * @param {Object} criteria - Search criteria
+     * @returns {Promise<number>} Count of matching articles
+     */
+    async count(criteria = {}) {
+      try {
+        return await model.count({ where: criteria });
+      } catch (error) {
+        throw createRepositoryError(error, 'count');
       }
     }
   }

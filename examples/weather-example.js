@@ -1,4 +1,4 @@
-import { createWeatherService } from '../services/weather/index.js';
+import { createWeatherService, WeatherProvider } from '../services/weather/index.js';
 import { createWeatherRepository, RepositoryType } from '../repositories/weather/index.js';
 import Weather from '../models/weather.js';
 import database from '../config/database.js';
@@ -99,4 +99,4 @@ const fetchAndCompareWeather = async (city) => {
 };
 
 // Run the example
-// fetchAndCompareWeather('Ho Chi Minh');
+fetchAndCompareWeather('Ho Chi Minh');
