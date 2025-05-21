@@ -99,22 +99,28 @@ async function fetchData(env) {
   
     // Save headlines to database
     for (const article of topHeadlines.articles) {
-        try {
-            const savedArticle = await newsRepository.create({
-                title: article.title,
-                description: article.description || '',
-                content: article.content || '',
-                url: article.url,
-                imageUrl: article.imageUrl || '', 
-                publishedAt: article.publishedAt,
-                sourceName: article.sourceName,
-                author: article.author || '',
-                provider: 'newsapi'
-            });
-            console.log(`Successfully saved article: ${savedArticle.title}`);
-        } catch (error) {
+      try {
+        const savedArticle = await newsRepository.create({
+            title: article.title,
+            description: article.description || '',
+            content: article.content || '',
+            url: article.url,
+            imageUrl: article.imageUrl || '', 
+            publishedAt: article.publishedAt,
+            sourceName: article.sourceName,
+            author: article.author || '',
+            provider: 'newsapi'
+        });
+        console.log(`Successfully saved article: ${savedArticle.title}`);
+      } catch (error) {
+        // Check if this is a unique constraint violation (PostgreSQL code 23505)
+        if (error.originalError && error.originalError.code === '23505') {
+            console.log(`Skipped duplicate article: ${article.title}`);
+        } else {
+            // This is some other error, log it
             console.error(`Error saving article: ${error.message}`);
         }
+      }
     }
 
     return results;

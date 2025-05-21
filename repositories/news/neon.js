@@ -102,13 +102,15 @@ export default function createNeonRepository(config = {}) {
       try {
         this.validate(data);
         
+        const now = new Date();
+
         const result = await sql`
           INSERT INTO news (
-            title, description, content, url, "imageUrl", "publishedAt", 
+            title, description, content, url, "imageUrl", "publishedAt", "createdAt",
             "sourceName", author, provider
           ) VALUES (
             ${data.title}, ${data.description || null}, ${data.content}, 
-            ${data.url || null}, ${data.imageUrl || null}, ${data.publishedAt || new Date()}, 
+            ${data.url || null}, ${data.imageUrl || null}, ${data.publishedAt || now}, ${now},
             ${data.sourceName || null}, ${data.author || null}, ${data.provider || 'newsapi'}
           )
           RETURNING *

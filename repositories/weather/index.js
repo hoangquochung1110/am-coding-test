@@ -1,6 +1,4 @@
 import WeatherRepositoryInterface from './interface.js';
-import SequelizeWeatherRepository from './sequelize.js';
-import NeonWeatherRepository from './neon.js';
 
 /**
  * WeatherRepository Factory

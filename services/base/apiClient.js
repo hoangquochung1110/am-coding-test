@@ -37,9 +37,23 @@ class BaseApiClient {
     // Helper for making requests
     async _makeRequest(endpoint, options = {}) {
         try {
+            // Ensure we have a headers object
+            const headers = options.headers || {};
+            
+            // Add User-Agent header if not already present
+            if (!headers['User-Agent']) {
+                headers['User-Agent'] = 'am-coding-test/1.0 (CloudflareWorker)';
+            }
+            
+            // Update options with our headers
+            const updatedOptions = {
+                ...options,
+                headers
+            };
+            
             const response = await fetch(
                 this._buildUrl(endpoint, options.params), 
-                options
+                updatedOptions
             );
             
             // Check if response is ok

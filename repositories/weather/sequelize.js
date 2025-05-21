@@ -2,7 +2,6 @@
  * Sequelize implementation of WeatherRepositoryInterface
  * For use with standard Node.js environments
  */
-import { Op } from 'sequelize';
 import WeatherRepositoryInterface from './interface.js';
 import { validateWeatherData, createRepositoryError } from './utils.js';
 
