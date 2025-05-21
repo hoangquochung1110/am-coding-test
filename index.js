@@ -3,6 +3,7 @@ import { EventEmitter } from 'events';
 import config from './config/index.js';
 import database from './config/database.js';
 import routes from './routes/index.js';
+import rateLimit from 'express-rate-limit';
 
 class Application extends EventEmitter {
   constructor() {
@@ -16,6 +17,9 @@ class Application extends EventEmitter {
   }
 
   initializeMiddlewares() {
+    // Configure Express to trust proxies for accurate IP detection
+    this.app.set('trust proxy', 1);
+    
     // Enable CORS for all routes
     this.app.use((req, res, next) => {
       res.header('Access-Control-Allow-Origin', '*');
@@ -30,10 +34,27 @@ class Application extends EventEmitter {
       next();
     });
     
+    // Add rate limiting middleware
+    const apiLimiter = rateLimit({
+      windowMs: 60 * 1000, // 1 minute window
+      max: 5, // Limit each IP to 5 requests per window
+      standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+      legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+      message: {
+        error: "Too many requests, please wait before retrying."
+      },
+      keyGenerator: (req) => {
+        // Use IP address as the default identifier
+        return req.ip;
+      }
+    });
+    
+    // Apply rate limiting to all API routes
+    this.app.use('/api', apiLimiter);
+    
     this.app.use(express.json());
     // Add other middlewares here (helmet, etc.)
   }
-
 
   initializeRoutes() {
     // API routes
