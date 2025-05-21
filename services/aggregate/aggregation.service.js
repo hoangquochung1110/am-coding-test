@@ -4,6 +4,13 @@ import { createWeatherRepository, RepositoryType } from '../../repositories/weat
 import { Weather, News } from '../../models/index.js';
 import { buildQueryOptions } from "../../middleware/queryBuilder.js";
 import { getPaginatedData } from "../../utils/pagination.js";
+import { 
+  weatherFilters, 
+  newsFilters,
+  processFilters,
+  processWeatherFilters,
+  processNewsFilters
+} from "../../middleware/schemas/index.js";
 
 /**
  * Service for aggregating data from different sources
@@ -65,19 +72,28 @@ export class AggregationService {
       // Ensure repositories are initialized
       await this.ensureInitialized();
 
-      // Extract filter parameters
-      const { city, country, provider, ...paginationParams } = query;
+      // Extract filter parameters using schemas (exclude pagination params)
+      const { page, limit, offset, sort, ...filterParams } = query;
       
-      // Create filter object
-      const filters = {};
-      if (city) filters.city = city;
-      if (country) filters.country = country;
-      if (provider) filters.provider = provider;
+      // Process schema-based filters
+      const weatherFilterParams = processFilters(filterParams, weatherFilters);
+      const newsFilterParams = processFilters(filterParams, newsFilters);
+      
+      // Process special filter cases (like date ranges)
+      const processedWeatherFilters = processWeatherFilters(weatherFilterParams);
+      const processedNewsFilters = processNewsFilters(newsFilterParams);
+      
+      console.log('Processing request with filters:', {
+        weather: processedWeatherFilters,
+        news: processedNewsFilters,
+        pagination: { page, limit, offset, sort }
+      });
 
       // Fetch paginated weather and news data in parallel
+      // Using existing pagination utilities
       const [weather, news] = await Promise.all([
-        this.getPaginatedWeather(filters, paginationParams),
-        this.getPaginatedNews(paginationParams)
+        this.getPaginatedWeather(processedWeatherFilters, query), // Pass original query for pagination
+        this.getPaginatedNews(processedNewsFilters, query) // Pass original query for pagination
       ]);
 
       return {
@@ -99,17 +115,18 @@ export class AggregationService {
 
   /**
    * Get paginated news data
+   * @param {Object} filters - Filter criteria
    * @param {Object} paginationParams - Pagination parameters (page, limit)
    * @returns {Promise<Object>} News data with pagination metadata
    */
-  async getPaginatedNews(paginationParams = {}) {
+  async getPaginatedNews(filters = {}, paginationParams = {}) {
     try {
       await this.ensureInitialized();
       
       // Use the pagination utility to get paginated data
       const result = await getPaginatedData(
         this.newsRepository,
-        { provider: "newsapi" }, // Filter criteria
+        filters, // Filter criteria
         { order: [['publishedAt', 'DESC']] }, // Options
         paginationParams // Pagination parameters
       );
@@ -175,14 +192,18 @@ export class AggregationService {
     }
   }
 
-  // For backwards compatibility, maintain the old methods but use the new ones
+  // For backwards compatibility, maintain the old methods
   async getAllNews(limit = 5) {
-    const result = await this.getPaginatedNews({ limit });
+    const result = await this.getPaginatedNews({}, { limit });
     return result.items;
   }
 
   async getAllWeather(query = {}) {
-    const result = await this.getPaginatedWeather(query, query);
+    // Extract filter parameters using schemas
+    const filterParams = processFilters(query, weatherFilters);
+    const processedFilters = processWeatherFilters(filterParams);
+    
+    const result = await this.getPaginatedWeather(processedFilters, query);
     return result.items;
   }
 }
