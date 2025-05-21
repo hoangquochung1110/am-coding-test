@@ -1,5 +1,48 @@
 # am-coding-test
 
+## Sơ đồ hệ thống
+
+```
+                                                                                                         ┌────────────┐     
+                                                                                                         │            │     
+                                                                                                         │ Data Store │     
+┌───────────────────┐                     ┌──────────────────────────────────┐                           │ (Postgres) │     
+│                   │                     │                                  │                           │            │     
+│                   │                     │        APPLICATION SERVER        │                           │  Tables:   │     
+│      FRONTEND     ├─────────────────────▶            (Express)             ├───────────────────────────▶   - news   │     
+│                   │                     │                                  │                           │ - weather  │     
+│                   │                     │                                  │                           │            │     
+└───────────────────┘                     └──────────────────────────────────┘                           │            │     
+                                                                                                         └──────▲─────┘     
+                                                                                                                │           
+                                                                                                                │           
+                                                                                                                │           
+                                                                                                                │           
+                                                                                                                │           
+                                                                                                                │           
+                                           ┌───────────┐         ┌───────────┐                                  │           
+                                           │           │         │           │                                  │           
+                                           │           │         │           │                                  │           
+                                           │           │         │           │                                  │           
+                                           │  Worker   │   ...   │  Worker   ├──────────────────────────────────┘           
+                                           │           │         │           │                                              
+                                           │           │         │           │                                              
+                                           │           │         │           │                                              
+                                           └─────▲─────┘         └─────▲─────┘                                              
+                                                 │                     │                                                    
+                                                 │                     │                                                    
+                                                 │                     │                                                    
+                                           ┌─────┴─────────────────────┴──────┐                                             
+                                           │                                  │                 Admins/Operators can:       
+                                           │                                  │                 - schedule jobs (to fetch   
+                                           │   Admin Dashboard (Cloudflare) ◀─┼───────────────  data)                       
+                                           │                                  │                 - configure parameters (city
+                                           │                                  │                 for weather conditions,     
+                                           └──────────────────────────────────┘                 topics/subjects for news)   
+                                                                                                - monitors jobs             
+                                                                                                                            
+```
+
 ## Thông tin dự án
 
 Dự án sử dụng Express.js 4.21.0 làm web framework và Sequelize với PostgreSQL cho lưu trữ dữ liệu.
