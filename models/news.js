@@ -2,7 +2,7 @@ import { DataTypes, Model } from 'sequelize';
 import db from '../config/database.js';
 const { sequelize } = db;
 
-class News extends Model {}
+export default class News extends Model {}
 News.init({
   title: {
     type: DataTypes.STRING,

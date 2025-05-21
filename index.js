@@ -2,6 +2,7 @@ import express from 'express';
 import { EventEmitter } from 'events';
 import config from './config/index.js';
 import database from './config/database.js';
+import routes from './routes/index.js';
 
 class Application extends EventEmitter {
   constructor() {
@@ -10,12 +11,36 @@ class Application extends EventEmitter {
     this.config = config;
     this.db = database.sequelize;
     
-    // Setup basic middleware
+    this.initializeMiddlewares();
+    // Routes will be initialized in start() to handle async operations
+  }
+
+  initializeMiddlewares() {
     this.app.use(express.json());
+    // Add other middlewares here (cors, helmet, etc.)
+  }
+
+
+  initializeRoutes() {
+    // API routes
+    this.app.use('/api', routes);
     
-    // Setup basic routes
-    this.app.get('/', (req, res) => {
-      res.send('Hello World!');
+    // Handle 404
+    this.app.use((req, res) => {
+      res.status(404).json({
+        success: false,
+        message: 'Resource not found',
+      });
+    });
+
+    // Error handling middleware
+    this.app.use((err, req, res, next) => {
+      console.error('Unhandled error:', err);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+      });
     });
   }
   
@@ -34,18 +59,24 @@ class Application extends EventEmitter {
     this.app.post(path, ...handlers);
     return this;
   }
-  
-  // Add other HTTP methods as needed
-  
-  // Start the application
+
   async start() {
     try {
+      console.log('Application is initializing...');
+      
+      // Initialize routes (which includes controller initialization)
+      await this.initializeRoutes();
+      
       // Emit 'before:start' event before initialization
       this.emit('before:start');
       
       // Test database connection before starting the server
       await this.db.authenticate();
       console.log('Database connection has been established successfully.');
+      
+      // Just sync without altering tables
+      await this.db.sync();
+      console.log('Database connected');
       
       // Start the server
       const server = this.app.listen(this.config.port, () => {

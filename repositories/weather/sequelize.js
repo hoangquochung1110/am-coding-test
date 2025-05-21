@@ -2,7 +2,7 @@
  * Sequelize implementation of WeatherRepositoryInterface
  * For use with standard Node.js environments
  */
-
+import { Op } from 'sequelize';
 import WeatherRepositoryInterface from './interface.js';
 import { validateWeatherData, createRepositoryError } from './utils.js';
 
@@ -78,10 +78,17 @@ class SequelizeWeatherRepository extends WeatherRepositoryInterface {
    */
   async findAll(criteria = {}, options = {}) {
     try {
-      return await this.Weather.findAll({
-        where: criteria,
-        ...options
-      });
+      // Create query options, merging criteria as where clause
+      const queryOptions = {
+        ...options,
+      };
+      
+      if (criteria) {
+        queryOptions.where = criteria;
+      }
+
+      // Execute the query with the built options
+      return await this.Weather.findAll(queryOptions);
     } catch (error) {
       throw createRepositoryError(error, 'findAll');
     }

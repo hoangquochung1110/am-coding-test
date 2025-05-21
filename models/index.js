@@ -1,4 +1,12 @@
-// models/index.js
+// Import models
 import Weather from "./weather.js";
+import News from "./news.js";
 
-export { Weather };
+// Export models
+export { Weather, News };
+
+// Export default for convenience
+export default {
+  Weather,
+  News 
+};
