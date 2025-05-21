@@ -195,6 +195,43 @@ Dự án này sử dụng Cloudflare Workers để tự động thu thập dữ 
    npm run worker:deploy
    ```
 
+## Triển khai lên Render
+
+Render cung cấp một nền tảng đơn giản để triển khai ứng dụng Node.js với PostgreSQL. Dưới đây là cách triển khai ứng dụng này lên Render:
+
+### Ưu điểm khi triển khai trên Render:
+
+1. **Dễ dàng triển khai**
+   - Kết nối trực tiếp với GitHub/GitLab để tự động triển khai khi có thay đổi
+   - Hỗ trợ nhiều ngôn ngữ và framework phổ biến, trong đó có Nodejs và Express
+   - Giao diện quản lý trực quan, dễ sử dụng
+
+2. **Cấu hình đơn giản**
+   - Tự động phát hiện cấu hình dự án (Node.js, package.json, v.v.)
+   - Hỗ trợ biến môi trường dễ dàng
+   - Tích hợp sẵn Let's Encrypt SSL
+
+3. **Chi phí hợp lý**
+   - **Miễn phí** cho Web Service với:
+     - 512 MB RAM
+     - CPU chia sẻ
+     - Băng thông 100GB/tháng
+
+### Các bước triển khai:
+
+1. Đăng nhập vào [Render Dashboard](https://dashboard.render.com/)
+2. Tạo mới một "Web Service"
+3. Kết nối với repository GitHub/GitLab của bạn
+4. Cấu hình thông số:
+   ```
+   Build Command: npm install
+   Start Command: npm start
+   ```
+5. Thêm các biến môi trường cần thiết
+6. Nhấn "Create Web Service"
+
+Sau khi triển khai, Render sẽ cung cấp cho bạn một URL công khai để truy cập ứng dụng.
+
 ### Bí mật (Secrets) cần thiết cho Wrangler
 
 Worker cần các bí mật sau để hoạt động:
