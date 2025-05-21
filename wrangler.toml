@@ -14,7 +14,8 @@ crons = ["0 0,8,16 * * *"]
 
 # Define the cities you want to fetch weather for
 [vars]
-CITIES = "Ho Chi Minh,London,New York"
+CITIES = "Ho Chi Minh,London,New York,Singapore"
+NEWS_CATEGORY="technology"
 
 # Secrets should be added using: wrangler secret put OPENWEATHERMAP_API_KEY
 

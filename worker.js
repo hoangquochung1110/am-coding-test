@@ -55,6 +55,7 @@ async function fetchData(env) {
   try {
 
     const CITIES = env.CITIES ? env.CITIES.split(',') : ['Ho Chi Minh'];
+    const NEWS_CATEGORY = env.NEWS_CATEGORY ? env.NEWS_CATEGORY : 'technology';
 
     // Create the weather service using the API key from environment
     const weatherService = createWeatherService(env.OPENWEATHERMAP_API_KEY);
@@ -94,7 +95,7 @@ async function fetchData(env) {
 
     const topHeadlines = await newsService.getTopHeadlines({ 
       country: 'us',
-      category: 'technology'
+      category: NEWS_CATEGORY
     });
   
     // Save headlines to database
