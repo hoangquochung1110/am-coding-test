@@ -3,45 +3,64 @@
 ## Sơ đồ hệ thống
 
 ```
-                                                                                                         ┌────────────┐     
-                                                                                                         │            │     
-                                                                                                         │ Data Store │     
-┌───────────────────┐                     ┌──────────────────────────────────┐                           │ (Postgres) │     
-│                   │                     │                                  │                           │            │     
-│                   │                     │        APPLICATION SERVER        │                           │  Tables:   │     
-│      FRONTEND     ├─────────────────────▶            (Express)             ├───────────────────────────▶   - news   │     
-│                   │                     │                                  │                           │ - weather  │     
-│                   │                     │                                  │                           │            │     
-└───────────────────┘                     └──────────────────────────────────┘                           │            │     
-                                                                                                         └──────▲─────┘     
-                                                                                                                │           
-                                                                                                                │           
-                                                                                                                │           
-                                                                                                                │           
-                                                                                                                │           
-                                                                                                                │           
-                                           ┌───────────┐         ┌───────────┐                                  │           
-                                           │           │         │           │                                  │           
-                                           │           │         │           │                                  │           
-                                           │           │         │           │                                  │           
-                                           │  Worker   │   ...   │  Worker   ├──────────────────────────────────┘           
-                                           │           │         │           │                                              
-                                           │           │         │           │                                              
-                                           │           │         │           │                                              
-                                           └─────▲─────┘         └─────▲─────┘                                              
-                                                 │                     │                                                    
-                                                 │                     │                                                    
-                                                 │                     │                                                    
-                                           ┌─────┴─────────────────────┴──────┐                                             
-                                           │                                  │                 Admins/Operators can:       
-                                           │                                  │                 - schedule jobs (to fetch   
-                                           │   Admin Dashboard (Cloudflare) ◀─┼───────────────  data)                       
-                                           │                                  │                 - configure parameters (city
-                                           │                                  │                 for weather conditions,     
-                                           └──────────────────────────────────┘                 topics/subjects for news)   
-                                                                                                - monitors jobs             
-                                                                                                                            
+                                                                                                                   ┌────────────┐     
+                                                                                                                   │            │     
+                                                                                                                   │ Data Store │     
+          ┌───────────────────┐                     ┌──────────────────────────────────┐                           │ (Postgres) │     
+          │                   │                     │                                  │                           │            │     
+          │                   │                     │        APPLICATION SERVER        │           read            │  Tables:   │     
+          │      FRONTEND     ├─────────────────────▶            (Express)             ◀───────────────────────────▶   - news   │     
+          │                   │                     │                                  │                           │ - weather  │     
+          │                   │                     │                                  │                           │            │     
+          └───────────────────┘                     └──────────────────────────────────┘                           │            │     
+                                                                                                                   └──────▲─────┘     
+                                                                                                                          │           
+┌───────────────────────────────────────────┐                                                                             │           
+│                                           │                                                                             │           
+│                                           │                                                                             │           
+│           ┌──────────────────┐            │                                                                             │           
+│           │                  │            │                                                                             │           
+│           │  OpenWeatherMap  │            │        ┌───────────┐         ┌───────────┐                                  │           
+│           │                  │            │        │           │         │           │                                  │           
+│           │                  │            │        │           │         │           │                                  │           
+│           └──────────────────┘            │        │           │         │           │              write               │           
+│                                           ├────────▶  Worker   │   ...   │  Worker   ├──────────────────────────────────┘           
+│           ┌──────────────────┐            │        │           │         │           │                                              
+│           │                  │            │        │           │         │           │                                              
+│           │   AccuWeather    │            │        │           │         │           │                                              
+│           │                  │            │        └─────▲─────┘         └─────▲─────┘                                              
+│           │                  │            │              │                     │                                                    
+│           └──────────────────┘            │              │                     │                                                    
+│                                           │              │                     │                                                    
+│           ┌──────────────────┐            │        ┌─────┴─────────────────────┴──────┐                                             
+│           │                  │            │        │                                  │                 Admins/Operators can:       
+│           │     NewsAPI      │            │        │                                  │                 - schedule jobs (to fetch   
+│           │                  │            │        │   Admin Dashboard (Cloudflare) ◀─┼───────────────  data)                       
+│           │                  │            │        │                                  │                 - configure parameters (city
+│           └──────────────────┘            │        │                                  │                 for weather conditions,     
+│                                           │        └──────────────────────────────────┘                 topics/subjects for news)   
+│                                           │                                                             - monitors jobs             
+└───────────────────────────────────────────┘                                                                                         
+                                                                                                                                      
+                                                                                                                                      
 ```
+
+## Yêu cầu đề bài:
+
+✅ Lấy data từ ít nhất hai nguồn: OpenWeatherMap và AccuWeather và NewsAPI
+
+✅ Chuẩn hoá và lưu data vào database PostgreSQL
+
+✅ Endpoint để trả về kết quả kết hơp từ nhiều bảng: 
+   ```
+   curl https://am-coding-test.onrender.com/api/aggregated-data
+   ```
+
+✅ [Frontend dashboard](https://github.com/hoangquochung1110/am-coding-test-front). Live: https://am-coding-test-front.pages.dev/
+
+✅ Rate limiting:
+   - Server sử dụng `express-rate-limit` để limit số lượng request (theo IP) trong một thời gian nhất định. Dữ liệu lưu trữ in-memory do đây là POC có server đơn. Trong môi trường production, ta có thể sử dụng Redis để lưu trữ dữ liệu trong môi trường đa máy chủ để bảo đảm tính sẵn sàng cao.
+   - Frontend kết hợp xử lí rate limiting với việc lưu trữ request history trong localStorage để làm dịu trải nghiệm người dùng.
 
 ## Thông tin dự án
 
