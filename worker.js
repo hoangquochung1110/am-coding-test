@@ -74,7 +74,7 @@ async function fetchData(env) {
           
           // Save to database
           const record = await weatherRepository.save(weatherData);
-          console.log(`Saved weather data for ${city}: `, record)
+          console.log(`Saved weather data for ${city}`)
           
           // Add database operation result to the response
           return { 
@@ -89,42 +89,78 @@ async function fetchData(env) {
         }
       })
     );
-    
-    // Log results (for the POC)
-    console.log('Weather data fetch results:', JSON.stringify(results, null, 2));
 
     const topHeadlines = await newsService.getTopHeadlines({ 
       country: 'us',
       category: NEWS_CATEGORY
     });
   
-    // Save headlines to database
-    for (const article of topHeadlines.articles) {
+    // Save headlines to database in parallel
+    const articlePromises = topHeadlines.articles.map(async (article) => {
       try {
         const savedArticle = await newsRepository.create({
-            title: article.title,
-            description: article.description || '',
-            content: article.content || '',
-            url: article.url,
-            imageUrl: article.imageUrl || '', 
-            publishedAt: article.publishedAt,
-            sourceName: article.sourceName,
-            author: article.author || '',
-            provider: 'newsapi'
+          title: article.title,
+          description: article.description || '',
+          content: article.content || '',
+          url: article.url,
+          imageUrl: article.imageUrl || '', 
+          publishedAt: article.publishedAt,
+          sourceName: article.sourceName,
+          author: article.author || '',
+          provider: 'newsapi'
         });
         console.log(`Successfully saved article: ${savedArticle.title}`);
+        return {
+          type: 'news',
+          success: true,
+          data: {
+            id: savedArticle.id,
+            title: savedArticle.title,
+            description: savedArticle.description,
+            source: savedArticle.sourceName,
+            url: savedArticle.url,
+            imageUrl: savedArticle.imageUrl,
+            publishedAt: savedArticle.publishedAt,
+            provider: savedArticle.provider
+          }
+        };
       } catch (error) {
-        // Check if this is a unique constraint violation (PostgreSQL code 23505)
         if (error.originalError && error.originalError.code === '23505') {
-            console.log(`Skipped duplicate article: ${article.title}`);
-        } else {
-            // This is some other error, log it
-            console.error(`Error saving article: ${error.message}`);
+          console.log(`Skipped duplicate article: ${article.title}`);
+          return {
+            type: 'news',
+            success: false,
+            error: 'Duplicate article',
+            title: article.title
+          };
         }
+        console.error(`Error saving article: ${error.message}`);
+        return {
+          type: 'news',
+          success: false,
+          error: error.message,
+          title: article.title
+        };
       }
-    }
+    });
 
-    return results;
+    // Wait for all article operations to complete
+    const articleResults = await Promise.all(articlePromises);
+
+    // Format weather results to match the unified structure
+    const formattedWeatherResults = results.map(weatherResult => ({
+      type: 'weather',
+      success: weatherResult.success,
+      ...weatherResult
+    }));
+
+    // Combine all results
+    const unifiedResults = [
+      ...formattedWeatherResults,
+      ...articleResults
+    ];
+
+    return unifiedResults;
   } catch (error) {
     console.error("Error fetching weather data:", error);
     throw error;
