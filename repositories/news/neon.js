@@ -116,7 +116,26 @@ export default function createNeonRepository(config = {}) {
           RETURNING *
         `;
         
-        return result.rows[0];
+        // Handle different response formats from Neon
+        if (Array.isArray(result)) {
+          return result[0];
+        } else if (result && Array.isArray(result.rows)) {
+          return result.rows[0];
+        } else if (result && result.command === 'INSERT' && result.rowCount > 0) {
+          // If we have rowCount but no rows, try to fetch the inserted record
+          const inserted = await this.findByUrl(data.url || '');
+          if (inserted) return inserted;
+          
+          // If we can't find it, return a minimal response with the data we have
+          return {
+            ...data,
+            id: result.oid,
+            createdAt: now,
+            updatedAt: now
+          };
+        }
+        
+        throw new Error('Failed to create article: No data returned from database');
       } catch (error) {
         throw createRepositoryError(error, 'create');
       }
@@ -132,9 +151,38 @@ export default function createNeonRepository(config = {}) {
         const result = await sql`
           SELECT * FROM news WHERE id = ${id} LIMIT 1
         `;
-        return result.rows[0] || null;
+        return (Array.isArray(result) ? result[0] : result.rows[0]) || null;
       } catch (error) {
         throw createRepositoryError(error, 'findById');
+      }
+    }
+
+    /**
+     * Find a news article by URL
+     * @param {string} url - Article URL
+     * @returns {Promise<Object|null>} Found article or null
+     */
+    async findByUrl(url) {
+      try {
+        if (!url) return null;
+        
+        const result = await sql`
+          SELECT * FROM news WHERE url = ${url} LIMIT 1
+        `;
+        
+        if (Array.isArray(result)) {
+          return result[0] || null;
+        } else if (result && Array.isArray(result.rows)) {
+          return result.rows[0] || null;
+        }
+        
+        return null;
+      } catch (error) {
+        // If the error is about the table not existing, return null
+        if (error.message && error.message.includes('does not exist')) {
+          return null;
+        }
+        throw createRepositoryError(error, 'findByUrl');
       }
     }
 
